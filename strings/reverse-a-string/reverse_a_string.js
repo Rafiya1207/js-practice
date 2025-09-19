@@ -1,2 +1,4 @@
-const string = " ";
-console.log(string);
+const string = "a";
+const reversedString = "a";
+
+console.log(reversedString);
