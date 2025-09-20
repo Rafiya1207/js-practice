@@ -1,4 +1,4 @@
-const savannahMap = "Z  L";
+const savannahMap = "ZL ";
 let distance;
 
 if(savannahMap[0] !== " ") {
@@ -6,9 +6,7 @@ if(savannahMap[0] !== " ") {
     if(savannahMap[1] !== " ") {
         distance = 0;
 
-        if(savannahMap[2] !== " ") {
-            distance = 1;
-        } else {
+        if(savannahMap[2] === " ") {
             distance = 0;
         }
         
