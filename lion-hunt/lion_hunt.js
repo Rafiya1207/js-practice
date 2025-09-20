@@ -1,12 +1,17 @@
 const savannahMap = "L L";
 let distance;
 
-if(savannahMap[0] !== " " && savannahMap[0] === "L") {
+let animal = (savannahMap[0] === "L") ? "L" : "Z";
+let previousAnimal;
+
+if(savannahMap[0] !== " ") {
     
-    if(savannahMap[1] !== " " && savannahMap[1] !== "L") {
+    if(savannahMap[1] !== " ") {
+        previousAnimal = animal;
+        animal = savannahMap[1];
         distance = 0;
 
-        if(savannahMap[2] !== " " && savannahMap[2] !== "L") {
+        if(savannahMap[2] !== " " && animal === previousAnimal) {
             distance = 0;
         } else {
             distance = 0;
@@ -15,8 +20,15 @@ if(savannahMap[0] !== " " && savannahMap[0] === "L") {
     } else {
         distance = -1;
         
-        if(savannahMap[2] !== " " && savannahMap[2] !== "L") {
-            distance = 1;
+        if(savannahMap[2] !== " ") {
+            previousAnimal = animal;
+            animal = savannahMap[2];
+            
+            if(animal = previousAnimal) {
+                distance = -1;
+            } else {
+                distance = 1;
+            }
         } else {
             distance = -1;
         }
