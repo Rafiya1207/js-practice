@@ -1,21 +1,28 @@
-const savannahMap = "Z LL";
-let distance = -1;
+const savannahMap = " L ZZ L Z  LL  ";
+let distance = -2;
 let minDistance = 100;
-let prevAnimal = savannahMap[0];
+let hasSameAnimals = true;
+let prevAnimal;
+let currentAnimal;
 
-for(let index = 1; index < savannahMap.length; index++) {
+for(let index = 0; index < savannahMap.length; index++) {
     distance += 1;
     
-    if(savannahMap[index] !== " " && savannahMap[index] !== prevAnimal) {
-        minDistance = distance < minDistance ? distance : minDistance;
-        distance = -1;
-        prevAnimal = savannahMap[index];
-    }
+    if(savannahMap[index] !== " ") {
+        currentAnimal = savannahMap[index];
+        
+        if (currentAnimal !== prevAnimal && prevAnimal) {
+            hasSameAnimals = false;
+            minDistance = distance < minDistance ? distance : minDistance;
+        }
 
-    if(savannahMap[index] === prevAnimal) {
         distance = -1;
+        prevAnimal = currentAnimal;
     }
+}
 
+if(hasSameAnimals) {
+    minDistance = -1;
 }
 
 console.log(minDistance);
