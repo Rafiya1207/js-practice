@@ -1,4 +1,4 @@
-const savannahMap = "LZZ";
+const savannahMap = "ZL L";
 let distance;
 
 let animal = (savannahMap[0] === "L") ? "L" : "Z";
@@ -30,7 +30,19 @@ if(savannahMap[0] !== " ") {
                 distance = 1;
             }
         } else {
-            distance = -1;
+            if(savannahMap[3] !== " ") {
+                previousAnimal = animal;
+                animal = savannahMap[3];
+                
+                if(animal === previousAnimal) {
+                    distance = -1;
+                } else {
+                    distance = 2;
+                }
+                
+            } else {
+                distance = -1;
+            }
         }
     }
     
