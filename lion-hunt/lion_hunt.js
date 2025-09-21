@@ -1,89 +1,22 @@
-const savannahMap = "L  L";
-let distance;
+const savannahMap = "Z L";
+let distance = -1;
 
-let animal = (savannahMap[0] === "L") ? "L" : "Z";
-let previousAnimal;
+let animal = " ";
+let previousAnimal = "";
 
-if(savannahMap[0] !== " ") {
-    
-    if(savannahMap[1] !== " ") {
+for(let index = 0; index < savannahMap.length; index++) {
+
+    if(savannahMap[index] !== " "){
         previousAnimal = animal;
-        animal = savannahMap[1];
-        distance = 0;
-
-        if(savannahMap[2] !== " " && animal === previousAnimal) {
-            distance = 0;
-        } else {
-            distance = 0;
-        }
-        
-    } else {
-        distance = -1;
-        
-        if(savannahMap[2] !== " ") {
-            previousAnimal = animal;
-            animal = savannahMap[2];
-            
-            if(animal === previousAnimal) {
-                
-                if(savannahMap[3] !== " ") {
-                    previousAnimal = animal;
-                    animal = savannahMap[3];
-                
-                    if(animal === previousAnimal) {
-                        distance = -1;
-                    } else {
-                        distance = 0;
-                    }
-                } else {
-                    distance = -1;
-                }
-            } else {
-
-                if(savannahMap[3] !== " ") {
-                    previousAnimal = animal;
-                    animal = savannahMap[3];
-                
-                    if(animal === previousAnimal) {
-                        distance = 1;
-                    } else {
-                        distance = 0;
-                    }
-                } else {
-                    distance = 1;
-                }
-            }
-        } else {
-            if(savannahMap[3] !== " ") {
-                previousAnimal = animal;
-                animal = savannahMap[3];
-                
-                if(animal === previousAnimal) {
-                    distance = -1;
-                } else {
-                    distance = 2;
-                }
-                
-            } else {
-                distance = -1;
-            }
-        }
+        animal = savannahMap[index];
     }
-    
-} else {
-    
-    if(savannahMap[1] !== " ") {
+
+    if(animal === previousAnimal) {
         distance = -1;
+    }
 
-        if(savannahMap[2] !== " ") {
-            distance = 0;
-        } else {
-            distance = -1;
-        }
-
-    } else {
-        distance = -1;
-
+    if(animal === " " || previousAnimal === " ") {
+        distance = distance + 1;
     }
 
 }
