@@ -1,24 +1,16 @@
-const savannahMap = "Z L";
+const savannahMap = "L  ZL Z";
 let distance = -1;
 
-let animal = " ";
-let previousAnimal = "";
+let minDistance = 0;
 
-for(let index = 0; index < savannahMap.length; index++) {
+for(let index = 1; index < savannahMap.length; index++) {
+    
+    distance += 1;
 
-    if(savannahMap[index] !== " "){
-        previousAnimal = animal;
-        animal = savannahMap[index];
-    }
-
-    if(animal === previousAnimal) {
+    if(savannahMap[index] !== " ") {
+        minDistance = distance < minDistance ? distance : minDistance;
         distance = -1;
     }
 
-    if(animal === " " || previousAnimal === " ") {
-        distance = distance + 1;
-    }
-
 }
-
-console.log(distance);
+console.log(minDistance);
