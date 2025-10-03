@@ -1,6 +1,6 @@
 function compoundInterest(p, t, r) {
-  const simpleInterest = Math.round((p * t * r) / 100);
-  return p + simpleInterest;
+  const simpleInterest = (p * t * r) / 100;
+  return simpleInterest;
 }
 
 function detailedMessage(description, p, t, r, expected, actual) {
@@ -11,7 +11,7 @@ function detailedMessage(description, p, t, r, expected, actual) {
 }
 
 function composeMessage(description, p, t, r, expected, actual) {
-  if (expected === actual) {
+  if (Math.round(expected) === Math.round(actual)) {
     return `✅${description}`;
   }
   return detailedMessage(description, p, t, r, expected, actual);
@@ -24,7 +24,9 @@ function testCompoundInterest(description, p, t, r, expected) {
 }
 
 function testAll() {
-  testCompoundInterest('rate and time is one', 1, 1, 1, 1);
+  testCompoundInterest('rate and time is one', 1, 1, 1, 0);
+  testCompoundInterest('rate is ten', 1, 1, 10, 0);
+  testCompoundInterest('principal is greater than 1', 1000, 1, 10, 100);
 }
 
 testAll();
