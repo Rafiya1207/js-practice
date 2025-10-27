@@ -28,7 +28,21 @@ function encode(data) {
 		case 'string': return encodeStringData(data);
 		case 'Array': return encodeList(data, 0, 'l');
 	}
-	return 'Invalid';
+}
+
+function bencodedDataType(bencodedData) {
+	if (bencodedData[0] === 'i') {
+		return 'number';
+	}
+}
+
+function decodeToNumber(bencodedData) {
+	const data = bencodedData.slice(1, bencodedData.length);
+	return parseInt(data);
+}
+
+function decode(bencodedData) {
+	return decodeToNumber(bencodedData);
 }
 
 function composeMsg(description, data, expected, received) {
@@ -54,7 +68,12 @@ function testEncode(description, data, expected) {
 	console.log(composeMsg(description, data, expected, received));
 }
 
-function testAll() {
+function testDecode(description, bencodedData, expected) {
+	const received = decode(bencodedData);
+	console.log(composeMsg(description, bencodedData, expected, received));
+}
+
+function testAllEncode() {
 	testEncode('data type is number', 123, 'i123e');
 	testEncode('data is negative number', -42, 'i-42e');
 	testEncode('data is zero', 0, 'i0e');
@@ -68,6 +87,16 @@ function testAll() {
 	testEncode('list has empty string', [0, "", ["test"]], "li0e0:l4:testee");
 	testEncode('items are numbers, strings, list', ["", 0, []], "l0:i0elee");
 	testEncode('deeply nested list', ["one", ["two", ["three"]]], "l3:onel3:twol5:threeeee");
+}
+
+function testAllDecode() {
+	testDecode('number', "i123e", 123);
+	testDecode('negative number', "i-67e", -67);
+	testDecode('zero', "i0e", 0);
+}
+
+function testAll() {
+	testAllDecode();
 }
 
 testAll();
