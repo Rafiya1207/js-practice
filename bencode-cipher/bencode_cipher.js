@@ -27,6 +27,8 @@ function testEncode(description, data, expected) {
 
 function testAll() {
 	testEncode('data type is number', 123, 'i123e');
+	testEncode('data is negative number', -42, 'i-42e');
+	testEncode('data is zero', 0, 'i0e');
 }
 
 testAll();
