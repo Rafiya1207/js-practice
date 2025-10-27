@@ -7,7 +7,7 @@ function encodeStringData(stringData) {
 }
 
 function type(data) {
-	return Array.isArray(data) ? 'Array' : typeof (data);
+	return Array.isArray(data) ? 'array' : typeof (data);
 }
 
 function encodeList(list, index, bencodedData) {
@@ -26,11 +26,15 @@ function encode(data) {
 	switch (dataType) {
 		case 'number': return encodeNumberData(data);
 		case 'string': return encodeStringData(data);
-		case 'Array': return encodeList(data, 0, 'l');
+		case 'array': return encodeList(data, 0, 'l');
 	}
 }
 
 function bencodedDataType(bencodedData) {
+	if (bencodedData[0] === 'l') {
+		return 'array';
+	}
+
 	if (bencodedData[0] === 'i') {
 		return 'number';
 	}
@@ -41,7 +45,8 @@ function bencodedDataType(bencodedData) {
 }
 
 function decodeToNumber(bencodedData) {
-	const data = bencodedData.slice(1, bencodedData.length);
+	const end = bencodedData.indexOf('e')
+	const data = bencodedData.slice(1, end);
 	return parseInt(data);
 }
 
@@ -50,19 +55,63 @@ function decodeToString(bencodedData) {
 	return bencodedData.slice(startIndex);
 }
 
+function decodeToList(bencodedData) {
+	const list = [];
+	let extractedData = bencodedData.slice(1, bencodedData.length);
+	const type = bencodedDataType(extractedData);
+
+	if (type === 'number') {
+		list.push(decodeToNumber(extractedData));
+	}
+
+	return list;
+}
+
 function decode(bencodedData) {
 	const type = bencodedDataType(bencodedData);
 
 	switch (type) {
 		case 'number': return decodeToNumber(bencodedData);
 		case 'string': return decodeToString(bencodedData);
+		case 'array': return decodeToList(bencodedData);
 	}
+}
+
+function isArray(x) {
+  return typeof x === 'object';
+}
+
+function areArraysEqual(array1, array2) {
+  if (array1.length !== array2.length) {
+    return false;
+  }
+
+  for (let index = 0; index < array1.length; index++) {
+    if (!areDeepEqual(array1[index], array2[index])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function areDeepEqual(array1, array2) {
+  if (typeof array1 !== typeof array2) {
+    return false;
+  }
+
+  if (isArray(array1) && isArray(array2)) {
+    return areArraysEqual(array1, array2);
+  }
+
+  return array1 === array2;
 }
 
 function composeMsg(description, data, expected, received) {
 	const spaces = ' '.repeat(5);
 	const dashes = '-'.repeat(30);
-	const isPassed = expected === received;
+	const isPassed = areDeepEqual(expected, received);
+	
 	const symbol = isPassed ? '✅' : '❌';
 
 	let message = `${symbol} | ${description}\n`;
@@ -84,6 +133,7 @@ function testEncode(description, data, expected) {
 
 function testDecode(description, bencodedData, expected) {
 	const received = decode(bencodedData);
+	
 	console.log(composeMsg(description, bencodedData, expected, received));
 }
 
@@ -111,6 +161,7 @@ function testAllDecode() {
 	testDecode('empty string', "0:", "");
 	testDecode('text', "11:hello world", "hello world");
 	testDecode('special chars', "16:special!@#$chars", "special!@#$chars");
+	testDecode('list with one number', "li23ee", [23]);
 }
 
 function testAll() {
