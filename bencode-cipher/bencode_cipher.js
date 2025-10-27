@@ -6,6 +6,10 @@ function encodeStringData(stringData) {
 	return stringData.length + ':' + stringData;
 }
 
+function type(data) {
+	return Array.isArray(data) ? 'Array' : typeof (data);
+}
+
 function encodeList(list, index, bencodedData) {
 	if (index === list.length) {
 		return bencodedData + 'e';
@@ -17,13 +21,14 @@ function encodeList(list, index, bencodedData) {
 }
 
 function encode(data) {
-	const type = typeof (data);
+	const dataType = type(data);
 
-	switch (type) {
+	switch (dataType) {
 		case 'number': return encodeNumberData(data);
 		case 'string': return encodeStringData(data);
-		case 'object': return encodeList(data, 0, 'l');
+		case 'Array': return encodeList(data, 0, 'l');
 	}
+	return 'Invalid';
 }
 
 function composeMsg(description, data, expected, received) {
