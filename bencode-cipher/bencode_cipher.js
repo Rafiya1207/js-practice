@@ -45,8 +45,9 @@ function bencodedDataType(bencodedData) {
 }
 
 function decodeToNumber(bencodedData) {
-	const end = bencodedData.indexOf('e')
-	const data = bencodedData.slice(1, end);
+	const start = bencodedData.indexOf('i') + 1;
+	const end = bencodedData.indexOf('e');
+	const data = bencodedData.slice(start, end);
 	return parseInt(data);
 }
 
@@ -55,16 +56,28 @@ function decodeToString(bencodedData) {
 	return bencodedData.slice(startIndex);
 }
 
-function decodeToList(bencodedData) {
-	const list = [];
-	let extractedData = bencodedData.slice(1, bencodedData.length);
-	const type = bencodedDataType(extractedData);
+function decodeListString(listString, list) {
+	if (listString.length === 1) {
+		return list;
+	}
+	
+	item = decode(listString);
+	list.push(item);
+
+	let extractedString;
+	const type = bencodedDataType(listString);
 
 	if (type === 'number') {
-		list.push(decodeToNumber(extractedData));
+		const startIndex = listString.indexOf('e') + 1;
+		extractedString = listString.slice(startIndex, listString.length + 1);
 	}
+	return decodeListString(extractedString, list);
+}
 
-	return list;
+function decodeToList(bencodedData) {
+	const extractedData = bencodedData.slice(1, bencodedData.length);
+
+	return decodeListString(extractedData, []);
 }
 
 function decode(bencodedData) {
@@ -111,7 +124,6 @@ function composeMsg(description, data, expected, received) {
 	const spaces = ' '.repeat(5);
 	const dashes = '-'.repeat(30);
 	const isPassed = areDeepEqual(expected, received);
-	
 	const symbol = isPassed ? '✅' : '❌';
 
 	let message = `${symbol} | ${description}\n`;
@@ -162,6 +174,7 @@ function testAllDecode() {
 	testDecode('text', "11:hello world", "hello world");
 	testDecode('special chars', "16:special!@#$chars", "special!@#$chars");
 	testDecode('list with one number', "li23ee", [23]);
+	testDecode('list with two numbers', "li23ei90ee", [23, 90]);
 }
 
 function testAll() {
