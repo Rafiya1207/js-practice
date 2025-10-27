@@ -34,6 +34,10 @@ function bencodedDataType(bencodedData) {
 	if (bencodedData[0] === 'i') {
 		return 'number';
 	}
+
+	if (bencodedData.includes(':')) {
+		return 'string';
+	}
 }
 
 function decodeToNumber(bencodedData) {
@@ -41,8 +45,18 @@ function decodeToNumber(bencodedData) {
 	return parseInt(data);
 }
 
+function decodeToString(bencodedData) {
+	const startIndex = bencodedData.indexOf(':') + 1;
+	return bencodedData.slice(startIndex);
+}
+
 function decode(bencodedData) {
-	return decodeToNumber(bencodedData);
+	const type = bencodedDataType(bencodedData);
+
+	switch (type) {
+		case 'number': return decodeToNumber(bencodedData);
+		case 'string': return decodeToString(bencodedData);
+	}
 }
 
 function composeMsg(description, data, expected, received) {
@@ -93,6 +107,10 @@ function testAllDecode() {
 	testDecode('number', "i123e", 123);
 	testDecode('negative number', "i-67e", -67);
 	testDecode('zero', "i0e", 0);
+	testDecode('word', "5:hello", "hello");
+	testDecode('empty string', "0:", "");
+	testDecode('text', "11:hello world", "hello world");
+	testDecode('special chars', "16:special!@#$chars", "special!@#$chars");
 }
 
 function testAll() {
