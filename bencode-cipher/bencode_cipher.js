@@ -6,12 +6,23 @@ function encodeStringData(stringData) {
 	return stringData.length + ':' + stringData;
 }
 
+function encodeList(list, index, bencodedData) {
+	if (index === list.length) {
+		return bencodedData + 'e';
+	}
+
+	bencodedData += encode(list[index]);
+
+	return encodeList(list, index + 1, bencodedData);
+}
+
 function encode(data) {
 	const type = typeof (data);
 
 	switch (type) {
 		case 'number': return encodeNumberData(data);
 		case 'string': return encodeStringData(data);
+		case 'object': return encodeList(data, 0, 'l');
 	}
 }
 
@@ -46,6 +57,12 @@ function testAll() {
 	testEncode('data is empty string', "", "0:");
 	testEncode('data is text', "hello world", "11:hello world");
 	testEncode('special charcters', "special!@#$chars", "16:special!@#$chars");
+	testEncode('list', ["apple", 123], "l5:applei123ee");
+	testEncode('nested list', ["apple", 123, ["banana", -5]], "l5:applei123el6:bananai-5eee");
+	testEncode('empty list', [], "le");
+	testEncode('list has empty string', [0, "", ["test"]], "li0e0:l4:testee");
+	testEncode('items are numbers, strings, list', ["", 0, []], "l0:i0elee");
+	testEncode('deeply nested list', ["one", ["two", ["three"]]], "l3:onel3:twol5:threeeee");
 }
 
 testAll();
