@@ -52,30 +52,42 @@ function decodeToNumber(bencodedData) {
 }
 
 function decodeToString(bencodedData) {
-	const startIndex = bencodedData.indexOf(':') + 1;
-	return bencodedData.slice(startIndex);
+	console.log(bencodedData);
+
+	const colonIndex = bencodedData.indexOf(':');
+	const stringLength = parseInt(bencodedData.slice(0, colonIndex));
+	const endIndex = stringLength + 3;
+	return bencodedData.slice(colonIndex + 1, endIndex);
 }
 
 function decodeListString(listString, list) {
-	if (listString.length === 1) {
+	if (listString.length <= 1) {
 		return list;
 	}
-	
+
+	const type = bencodedDataType(listString);
+	let extractedString;
+
 	item = decode(listString);
 	list.push(item);
-
-	let extractedString;
-	const type = bencodedDataType(listString);
 
 	if (type === 'number') {
 		const startIndex = listString.indexOf('e') + 1;
 		extractedString = listString.slice(startIndex, listString.length + 1);
 	}
+	if (type === 'string') {
+		const startIndex = item.length + 2;
+		extractedString = listString.slice(startIndex, listString.length + 1);
+	}
+	if (type === 'array') {
+		return decodeToList(extractedString);
+	}
+
 	return decodeListString(extractedString, list);
 }
 
 function decodeToList(bencodedData) {
-	const extractedData = bencodedData.slice(1, bencodedData.length);
+	const extractedData = bencodedData.slice(1, bencodedData.length - 1);
 
 	return decodeListString(extractedData, []);
 }
@@ -91,33 +103,33 @@ function decode(bencodedData) {
 }
 
 function isArray(x) {
-  return typeof x === 'object';
+	return typeof x === 'object';
 }
 
 function areArraysEqual(array1, array2) {
-  if (array1.length !== array2.length) {
-    return false;
-  }
+	if (array1.length !== array2.length) {
+		return false;
+	}
 
-  for (let index = 0; index < array1.length; index++) {
-    if (!areDeepEqual(array1[index], array2[index])) {
-      return false;
-    }
-  }
+	for (let index = 0; index < array1.length; index++) {
+		if (!areDeepEqual(array1[index], array2[index])) {
+			return false;
+		}
+	}
 
-  return true;
+	return true;
 }
 
 function areDeepEqual(array1, array2) {
-  if (typeof array1 !== typeof array2) {
-    return false;
-  }
+	if (typeof array1 !== typeof array2) {
+		return false;
+	}
 
-  if (isArray(array1) && isArray(array2)) {
-    return areArraysEqual(array1, array2);
-  }
+	if (isArray(array1) && isArray(array2)) {
+		return areArraysEqual(array1, array2);
+	}
 
-  return array1 === array2;
+	return array1 === array2;
 }
 
 function composeMsg(description, data, expected, received) {
@@ -132,7 +144,7 @@ function composeMsg(description, data, expected, received) {
 		message += `${dashes}\n`;
 		message += `${spaces}data: ${data}\n`;
 		message += `${spaces}expected: ${expected}\n`;
-		message += `${spaces}receivec: ${received}\n`;
+		message += `${spaces}received: ${received}\n`;
 		message += `${dashes}\n`;
 	}
 	return message;
@@ -145,7 +157,7 @@ function testEncode(description, data, expected) {
 
 function testDecode(description, bencodedData, expected) {
 	const received = decode(bencodedData);
-	
+
 	console.log(composeMsg(description, bencodedData, expected, received));
 }
 
@@ -175,6 +187,8 @@ function testAllDecode() {
 	testDecode('special chars', "16:special!@#$chars", "special!@#$chars");
 	testDecode('list with one number', "li23ee", [23]);
 	testDecode('list with two numbers', "li23ei90ee", [23, 90]);
+	testDecode('list has numbers and strings', "li23e5:helloe", [23, 'hello']);
+	testDecode('nested list', "l5:applei123el6:bananai-5eee", ["apple", 123, ["banana", -5]]);
 }
 
 function testAll() {
