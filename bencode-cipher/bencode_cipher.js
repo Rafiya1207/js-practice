@@ -1,5 +1,5 @@
 function encode(data) {
-
+	return 'i' + data + 'e';
 }
 
 function composeMsg(description, data, expected, received) {
