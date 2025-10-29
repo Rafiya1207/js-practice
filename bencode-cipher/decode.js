@@ -1,6 +1,12 @@
-function getIntegerInstruction(string) {
+function splitNumberInstruction(string) {
 	const end = string.indexOf('e') + 1;
 	return string.slice(0, end);
+}
+
+function splitStringInstruction(string) {
+	const colonIndex = string.indexOf(':');
+	const length = parseInt(string.slice(0, colonIndex));
+	return string.slice(0, length + colonIndex + 1);
 }
 
 function decodeToNumber(bencodedData) {
@@ -8,68 +14,130 @@ function decodeToNumber(bencodedData) {
 	return parseInt(data);
 }
 
-function getListItems(listString) {
-	let index = 1;
-	let isEnd = true;
-	let listItems = '';
-
-	while (index <= listString.length) {
-		let currentItem = listString[index];
-
-		if (currentItem === 'e' && isEnd) {
-			return listItems;
-		}
-		if (currentItem === 'e' && !isEnd) {
-			isEnd = true;
-		}
-		if (currentItem === 'i') {
-			isEnd = false;
-		}
-		if (currentItem === 'l') {
-			currentItem = getListInstruction(listString.slice(index));
-			isEnd = true;
-			index += currentItem.length - 1;
-		}
-		listItems += currentItem;
-		index++;
-	}
-	return listItems;
+function decodeToString(bencodedData) {
+	const colonIndex = bencodedData.indexOf(':');
+	const stringLength = parseInt(bencodedData.slice(0, colonIndex));
+	const endIndex = stringLength + 3;
+	return bencodedData.slice(colonIndex + 1, endIndex);
 }
 
-function getListInstruction(listString) {
-	return 'l' + getListItems(listString) + 'e';
+function decodeToList(bencodedData, list) {
+	if (bencodedData.length <= 1 || bencodedData[0] === 'e') {
+		return list;
+	}
+
+	const item = getDataType(bencodedData);
+	const restString = removeFirstSubString(bencodedData, item);
+
+	list.push(decode(item));
+	return decodeToList(restString, list);
 }
 
-function getFirstInstruction(listItems) {
-	if (listItems[0] === 'i') {
-		return getIntegerInstruction(listItems);
-	}
-	if (listItems[0] === 'l') {
-		return getListInstruction(listItems);
-	}
+function removeFirstSubString(string, substring) {
+	return string.slice(substring.length);
 }
 
-function decodeList(listItems) {
-	const list = [];
-	let itemIndex = 0;
-	let restItems = listItems;
-
-	while (restItems !== '') {
-		const instruction = getFirstInstruction(restItems);
-		const item = decode(instruction);
-		restItems = restItems.slice(instruction.length);
-		list.push(item);
-		itemIndex += instruction.length;
+function splitListString(data, listString) {
+	if (data.length <= 1 || data[0] === 'e') {
+		return listString;
 	}
 
-	return list;
+	const firstItem = getDataType(data);
+	const restString = removeFirstSubString(data, firstItem);
+
+	listString += firstItem;
+	return splitListString(restString, listString);
+}
+
+function getDataType(data) {
+	switch (data[0]) {
+		case 'l': return 'l' + splitListString(data.slice(1), '') + 'e';
+		case 'i': return splitNumberInstruction(data);
+		case 'e': return 'e';
+		default: return splitStringInstruction(data);
+	}
 }
 
 function decode(data) {
-	if (data.startsWith('l') && data.endsWith('e')) {
-		return decodeList(data.slice(1, data.length - 1));
-	}
-	if (data.startsWith('i') && data.endsWith('e')) {
-		return decodeToNumber(data);
+	switch (data[0]) {
+		case 'l': return decodeToList(data.slice(1), []);
+		case 'i': return decodeToNumber(data);
+		case 'e': return 'e';
+		default: return decodeToString(data);
 	}
 }
+
+function isArray(x) {
+	return typeof x === 'object';
+}
+
+function areArraysEqual(array1, array2) {
+	if (array1.length !== array2.length) {
+		return false;
+	}
+
+	for (let index = 0; index < array1.length; index++) {
+		if (!areDeepEqual(array1[index], array2[index])) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function areDeepEqual(array1, array2) {
+	if (typeof array1 !== typeof array2) {
+		return false;
+	}
+
+	if (isArray(array1) && isArray(array2)) {
+		return areArraysEqual(array1, array2);
+	}
+
+	return array1 === array2;
+}
+
+function composeMsg(description, data, expected, received) {
+	const spaces = ' '.repeat(5);
+	const dashes = '-'.repeat(30);
+	const isPassed = areDeepEqual(expected, received);
+	const symbol = isPassed ? '✅' : '❌';
+
+	let message = symbol + ' | ' + description + '\n';
+
+	if (!isPassed) {
+		message += dashes + '\n';
+		message += spaces + 'data: ' + data + '\n';
+		message += spaces + 'expected:' + expected + '\n';
+		message += spaces + 'received: ' + received + '\n';
+		message += dashes + '\n';
+	}
+	return message;
+}
+
+function testDecode(description, bencodedData, expected) {
+	const received = decode(bencodedData);
+
+	console.log(composeMsg(description, bencodedData, expected, received));
+}
+
+function testAllDecode() {
+	testDecode('number', "i123e", 123);
+	testDecode('negative number', "i-67e", -67);
+	testDecode('zero', "i0e", 0);
+	testDecode('word', "5:hello", "hello");
+	testDecode('empty string', "0:", "");
+	testDecode('text', "11:hello world", "hello world");
+	testDecode('special chars', "16:special!@#$chars", "special!@#$chars");
+	testDecode('list with one number', "li23ee", [23]);
+	testDecode('list with two numbers', "li23ei90ee", [23, 90]);
+	testDecode('list with string', "l5:helloe", ['hello']);
+	testDecode('list has numbers and strings', "li23e5:helloe", [23, 'hello']);
+	testDecode('nested list', "l5:applei123el6:bananai-5eee", ["apple", 123, ["banana", -5]]);
+}
+
+function testAll() {
+	testAllDecode();
+}
+
+testAll();
