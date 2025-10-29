@@ -2,12 +2,12 @@ function removeFirstSubString(string, substring) {
 	return string.slice(substring.length);
 }
 
-function splitNumberInstruction(string) {
+function splitNumberDataType(string) {
 	const end = string.indexOf('e') + 1;
 	return string.slice(0, end);
 }
 
-function splitStringInstruction(string) {
+function splitStringDataType(string) {
 	const colonIndex = string.indexOf(':');
 	const length = parseInt(string.slice(0, colonIndex));
 	return string.slice(0, length + colonIndex + 1);
@@ -41,9 +41,9 @@ function decodeList(data, list, listString) {
 function getDataType(data) {
 	switch (data[0]) {
 		case 'l': return 'l' + decodeList(data.slice(1), [], '')[1] + 'e';
-		case 'i': return splitNumberInstruction(data);
+		case 'i': return splitNumberDataType(data);
 		case 'e': return 'e';
-		default: return splitStringInstruction(data);
+		default: return splitStringDataType(data);
 	}
 }
 
