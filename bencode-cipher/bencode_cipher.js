@@ -52,12 +52,52 @@ function decodeToNumber(bencodedData) {
 }
 
 function decodeToString(bencodedData) {
-	console.log(bencodedData);
-
 	const colonIndex = bencodedData.indexOf(':');
 	const stringLength = parseInt(bencodedData.slice(0, colonIndex));
 	const endIndex = stringLength + 3;
 	return bencodedData.slice(colonIndex + 1, endIndex);
+}
+
+function extractNumberItem(string) {
+	const end = string.indexOf('e') + 1;
+	return string.slice(0, end);
+}
+
+function extractStringItem(string) {
+	const colonIndex = string.indexOf(':');
+	const stringLength = parseInt(string.slice(0, colonIndex));
+	const endIndex = stringLength + 3;
+	return string.slice(0, endIndex);
+}
+
+function extractListItem(string) {
+	let listItem = '';
+	
+	for (let index = 0; index < string.length; index++) {
+		if (string[index] === 'e' && string[index + 1] !== 'e') {
+			return listItem + string[index];
+		}
+		listItem += string[index];
+	}
+}
+
+function extractFirstItem(listString) {
+	const type = bencodedDataType(listString);
+	let extractedString;
+
+	if (type === 'number') {
+		const endIndex = listString.indexOf('e') + 1;
+		extractedString = listString.slice(0, endIndex);
+	}
+	if (type === 'string') {
+		const colonIndex = listString.indexOf(':');
+		const stringLength = parseInt(listString.slice(0, colonIndex));
+		const endIndex = stringLength + 2;
+		extractedString = listString.slice(startIndex, endIndex);
+	}
+	if (type === 'array') {
+
+	}
 }
 
 function decodeListString(listString, list) {
@@ -66,22 +106,13 @@ function decodeListString(listString, list) {
 	}
 
 	const type = bencodedDataType(listString);
+
 	let extractedString;
 
 	item = decode(listString);
 	list.push(item);
 
-	if (type === 'number') {
-		const startIndex = listString.indexOf('e') + 1;
-		extractedString = listString.slice(startIndex, listString.length + 1);
-	}
-	if (type === 'string') {
-		const startIndex = item.length + 2;
-		extractedString = listString.slice(startIndex, listString.length + 1);
-	}
-	if (type === 'array') {
-		return decodeToList(extractedString);
-	}
+
 
 	return decodeListString(extractedString, list);
 }
@@ -192,7 +223,9 @@ function testAllDecode() {
 }
 
 function testAll() {
-	testAllDecode();
+	// testAllDecode();
+	console.log(encode(10e2))
+	console.log(encode(['app', -89, [[-590067, 'wordle', 893421], [], -12222223], ['quantum wordle wordle'], 0, ['', []]]))
 }
 
 testAll();
