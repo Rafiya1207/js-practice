@@ -35,7 +35,7 @@ function decodeList(data, list, listString) {
 
 	listString += firstItem;
 	list.push(decode(firstItem));
-	return splitList(restString, list, listString);
+	return decodeList(restString, list, listString);
 }
 
 function getDataType(data) {
