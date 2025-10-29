@@ -1,3 +1,7 @@
+function removeFirstSubString(string, substring) {
+	return string.slice(substring.length);
+}
+
 function splitNumberInstruction(string) {
 	const end = string.indexOf('e') + 1;
 	return string.slice(0, end);
@@ -22,7 +26,7 @@ function decodeToString(bencodedData) {
 }
 
 function decodeToList(bencodedData, list) {
-	if (bencodedData.length <= 1 || bencodedData[0] === 'e') {
+	if (bencodedData[0] === 'e') {
 		return list;
 	}
 
@@ -33,12 +37,8 @@ function decodeToList(bencodedData, list) {
 	return decodeToList(restString, list);
 }
 
-function removeFirstSubString(string, substring) {
-	return string.slice(substring.length);
-}
-
 function splitListString(data, listString) {
-	if (data.length <= 1 || data[0] === 'e') {
+	if (data[0] === 'e') {
 		return listString;
 	}
 
@@ -62,7 +62,6 @@ function decode(data) {
 	switch (data[0]) {
 		case 'l': return decodeToList(data.slice(1), []);
 		case 'i': return decodeToNumber(data);
-		case 'e': return 'e';
 		default: return decodeToString(data);
 	}
 }
@@ -134,6 +133,7 @@ function testAllDecode() {
 	testDecode('list with string', "l5:helloe", ['hello']);
 	testDecode('list has numbers and strings', "li23e5:helloe", [23, 'hello']);
 	testDecode('nested list', "l5:applei123el6:bananai-5eee", ["apple", 123, ["banana", -5]]);
+	testDecode('deep nest list', "l3:appi-89elli-590067e6:wordlei893421eelei-12222223eel21:apple wordle wordleei0el0:leee", ['app', -89, [[-590067, 'wordle', 893421], [], -12222223], ['apple wordle wordle'], 0, ['', []]]);
 }
 
 function testAll() {
